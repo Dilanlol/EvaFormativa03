@@ -1,0 +1,67 @@
+{% extends 'prestamos/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Herramientas</h1>
+    <a href="{% url 'herramienta_create' %}" class="btn btn-primary">Nueva herramienta</a>
+</div>
+
+<form method="get" class="row g-3 mb-4">
+    <div class="col-md-5">
+        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Buscar por nombre o código">
+    </div>
+    <div class="col-md-4">
+        <select name="categoria" class="form-select">
+            <option value="">Todas las categorías</option>
+            {% for categoria in categorias %}
+                <option value="{{ categoria.pk }}" {% if categoria.pk|stringformat:'s' == categoria_id %}selected{% endif %}>{{ categoria.nombre }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-outline-primary">Filtrar</button>
+        <a href="{% url 'herramienta_list' %}" class="btn btn-outline-secondary">Limpiar</a>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Estado</th>
+                <th>Disponible</th>
+                <th class="text-end">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for herramienta in herramientas %}
+            <tr>
+                <td>{{ herramienta.codigo }}</td>
+                <td><a href="{% url 'herramienta_detail' herramienta.pk %}">{{ herramienta.nombre }}</a></td>
+                <td>{{ herramienta.categoria.nombre }}</td>
+                <td>{{ herramienta.estado }}</td>
+                <td>
+                    {% if herramienta.disponible %}
+                        <span class="badge bg-success">Sí</span>
+                    {% else %}
+                        <span class="badge bg-secondary">No</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <a href="{% url 'herramienta_detail' herramienta.pk %}" class="btn btn-sm btn-info text-white">Ver</a>
+                    <a href="{% url 'herramienta_update' herramienta.pk %}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{% url 'herramienta_delete' herramienta.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No hay herramientas que coincidan con la búsqueda.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

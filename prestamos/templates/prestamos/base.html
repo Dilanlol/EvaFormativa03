@@ -10,6 +10,15 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="{% url 'inicio' %}">Junta de Vecinos</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'inicio' %}">Inicio</a></li>
+                    {% if user.is_staff %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'herramienta_list' %}">Herramientas</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'categoria_list' %}">Categorías</a></li>
+                    {% endif %}
+                </ul>
+            </div>
             <div class="ms-auto d-flex align-items-center gap-3 text-white">
                 {% if user.is_authenticated %}
                     <span>{{ user.username }} · {% if user.is_staff %}Encargado{% else %}Socio{% endif %}</span>

@@ -1,0 +1,15 @@
+{% extends 'prestamos/base.html' %}
+
+{% block content %}
+<div class="card border-danger shadow-sm">
+    <div class="card-body">
+        <h1 class="text-danger mb-3">Eliminar categoría</h1>
+        <p>¿Seguro que deseas eliminar la categoría <strong>{{ categoria.nombre }}</strong>?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+            <a href="{% url 'categoria_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

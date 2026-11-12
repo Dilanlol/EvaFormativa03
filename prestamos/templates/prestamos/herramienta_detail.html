@@ -1,0 +1,31 @@
+{% extends 'prestamos/base.html' %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h1 class="mb-4">{{ herramienta.nombre }}</h1>
+        <dl class="row">
+            <dt class="col-sm-3">Código</dt>
+            <dd class="col-sm-9">{{ herramienta.codigo }}</dd>
+
+            <dt class="col-sm-3">Categoría</dt>
+            <dd class="col-sm-9">{{ herramienta.categoria.nombre }}</dd>
+
+            <dt class="col-sm-3">Estado</dt>
+            <dd class="col-sm-9">{{ herramienta.estado }}</dd>
+
+            <dt class="col-sm-3">Disponible</dt>
+            <dd class="col-sm-9">{% if herramienta.disponible %}Sí{% else %}No{% endif %}</dd>
+
+            <dt class="col-sm-3">Fecha de ingreso</dt>
+            <dd class="col-sm-9">{{ herramienta.fecha_ingreso }}</dd>
+        </dl>
+
+        <div class="d-flex gap-2">
+            <a href="{% url 'herramienta_update' herramienta.pk %}" class="btn btn-warning">Editar</a>
+            <a href="{% url 'herramienta_delete' herramienta.pk %}" class="btn btn-danger">Eliminar</a>
+            <a href="{% url 'herramienta_list' %}" class="btn btn-secondary">Volver</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
