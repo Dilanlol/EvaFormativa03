@@ -1,3 +1,23 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Categoria, Herramienta, Prestamo
+
+
+@admin.register(Categoria)
+class CategoriaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'descripcion')
+    search_fields = ('nombre',)
+
+
+@admin.register(Herramienta)
+class HerramientaAdmin(admin.ModelAdmin):
+    list_display = ('codigo', 'nombre', 'categoria', 'estado', 'disponible')
+    list_filter = ('categoria', 'estado', 'disponible')
+    search_fields = ('codigo', 'nombre', 'categoria__nombre')
+
+
+@admin.register(Prestamo)
+class PrestamoAdmin(admin.ModelAdmin):
+    list_display = ('socio', 'herramienta', 'fecha_solicitud', 'fecha_devolucion_esperada', 'estado')
+    list_filter = ('estado', 'socio', 'herramienta__categoria')
+    search_fields = ('socio__username', 'herramienta__codigo', 'herramienta__nombre')
