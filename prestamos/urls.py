@@ -18,4 +18,9 @@ urlpatterns = [
     path('solicitud/', views.ver_solicitud, name='ver_solicitud'),
     path('solicitud/quitar/<int:id>/', views.quitar_solicitud, name='quitar_solicitud'),
     path('solicitud/confirmar/', views.confirmar_solicitud, name='confirmar_solicitud'),
+    path('mis-prestamos/', views.mis_prestamos, name='mis_prestamos'),
+    path('mis-prestamos/cancelar/<int:id>/', views.cancelar_prestamo, name='cancelar_prestamo'),
+    path('gestion-prestamos/', views.todos_prestamos, name='todos_prestamos'),
+    path('gestion-prestamos/activar/<int:id>/', views.activar_prestamo, name='activar_prestamo'),
+    path('gestion-prestamos/devolver/<int:id>/', views.devolver_prestamo, name='devolver_prestamo'),
 ]

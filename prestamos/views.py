@@ -227,3 +227,62 @@ def confirmar_solicitud(request):
         messages.warning(request, 'No se pudo confirmar ninguna solicitud.')
 
     return redirect('mis_prestamos')
+
+
+@login_required
+def mis_prestamos(request):
+    prestamos = Prestamo.objects.filter(socio=request.user).select_related('herramienta', 'herramienta__categoria').order_by('-fecha_solicitud')
+    return render(request, 'prestamos/mis_prestamos.html', {'prestamos': prestamos})
+
+
+@login_required
+@require_POST
+def cancelar_prestamo(request, id):
+    prestamo = get_object_or_404(Prestamo, pk=id, socio=request.user)
+    if prestamo.estado == 'Pendiente':
+        prestamo.estado = 'Cancelado'
+        prestamo.herramienta.disponible = True
+        prestamo.herramienta.save(update_fields=['disponible'])
+        prestamo.save(update_fields=['estado'])
+        messages.success(request, 'Préstamo cancelado correctamente.')
+    else:
+        messages.warning(request, 'Solo puedes cancelar préstamos en estado Pendiente.')
+    return redirect('mis_prestamos')
+
+
+@login_required
+@user_passes_test(es_encargado)
+def todos_prestamos(request):
+    prestamos = Prestamo.objects.select_related('socio', 'herramienta', 'herramienta__categoria').order_by('-fecha_solicitud')
+    return render(request, 'prestamos/todos_prestamos.html', {'prestamos': prestamos})
+
+
+@login_required
+@user_passes_test(es_encargado)
+@require_POST
+def activar_prestamo(request, id):
+    prestamo = get_object_or_404(Prestamo, pk=id)
+    if prestamo.estado == 'Pendiente':
+        prestamo.estado = 'Activo'
+        prestamo.save(update_fields=['estado'])
+        messages.success(request, 'Préstamo activado correctamente.')
+    else:
+        messages.warning(request, 'El préstamo debe estar en estado Pendiente para activarlo.')
+    return redirect('todos_prestamos')
+
+
+@login_required
+@user_passes_test(es_encargado)
+@require_POST
+def devolver_prestamo(request, id):
+    prestamo = get_object_or_404(Prestamo, pk=id)
+    if prestamo.estado in {'Pendiente', 'Activo'}:
+        prestamo.estado = 'Devuelto'
+        prestamo.fecha_devolucion_real = timezone.localdate()
+        prestamo.herramienta.disponible = True
+        prestamo.herramienta.save(update_fields=['disponible'])
+        prestamo.save(update_fields=['estado', 'fecha_devolucion_real'])
+        messages.success(request, 'Préstamo devuelto correctamente.')
+    else:
+        messages.warning(request, 'Solo puedes devolver préstamos activos o pendientes.')
+    return redirect('todos_prestamos')

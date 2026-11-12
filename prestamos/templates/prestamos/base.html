@@ -25,6 +25,11 @@
             <div class="ms-auto d-flex align-items-center gap-3 text-white">
                 {% if user.is_authenticated %}
                     <span>{{ user.username }} · {% if user.is_staff %}Encargado{% else %}Socio{% endif %}</span>
+                    {% if not user.is_staff %}
+                        <a class="btn btn-sm btn-outline-light" href="{% url 'mis_prestamos' %}">Mis préstamos</a>
+                    {% else %}
+                        <a class="btn btn-sm btn-outline-light" href="{% url 'todos_prestamos' %}">Gestión</a>
+                    {% endif %}
                     <form action="{% url 'logout' %}" method="post" class="d-inline">
                         {% csrf_token %}
                         <button class="btn btn-outline-light btn-sm" type="submit">Cerrar sesión</button>
