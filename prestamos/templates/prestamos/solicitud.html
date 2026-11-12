@@ -1,0 +1,45 @@
+{% extends 'prestamos/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Mi solicitud</h1>
+    <a href="{% url 'catalogo' %}" class="btn btn-secondary">Volver al catálogo</a>
+</div>
+
+{% if herramientas %}
+<div class="table-responsive mb-4">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Herramienta</th>
+                <th>Código</th>
+                <th>Categoría</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for herramienta in herramientas %}
+            <tr>
+                <td>{{ herramienta.nombre }}</td>
+                <td>{{ herramienta.codigo }}</td>
+                <td>{{ herramienta.categoria.nombre }}</td>
+                <td>
+                    <form action="{% url 'quitar_solicitud' herramienta.pk %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Quitar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<form action="{% url 'confirmar_solicitud' %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success">Confirmar solicitud</button>
+</form>
+{% else %}
+<div class="alert alert-warning">Tu solicitud está vacía. Agrega herramientas desde el catálogo.</div>
+{% endif %}
+{% endblock %}

@@ -1,11 +1,16 @@
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db import transaction
 from django.db.models import Q
 from django.db.models.deletion import ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from .forms import CategoriaForm, HerramientaForm
-from .models import Categoria, Herramienta
+from .models import Categoria, Herramienta, Prestamo
 
 
 def es_encargado(user):
@@ -139,3 +144,86 @@ def herramienta_delete(request, pk):
         messages.success(request, 'Herramienta eliminada correctamente.')
         return redirect('herramienta_list')
     return render(request, 'prestamos/herramienta_confirm_delete.html', {'herramienta': herramienta})
+
+
+@login_required
+def catalogo(request):
+    herramientas = Herramienta.objects.filter(disponible=True).exclude(estado='En reparación').select_related('categoria').order_by('nombre')
+    return render(request, 'prestamos/catalogo.html', {'herramientas': herramientas})
+
+
+@login_required
+@require_POST
+def agregar_solicitud(request, id):
+    herramienta = get_object_or_404(Herramienta, pk=id)
+    solicitud = request.session.get('solicitud', [])
+
+    if not herramienta.disponible or herramienta.estado == 'En reparación':
+        messages.error(request, 'La herramienta no está disponible para préstamo.')
+    elif id in solicitud:
+        messages.warning(request, 'La herramienta ya fue agregada a tu solicitud.')
+    elif len(solicitud) >= 3:
+        messages.error(request, 'Solo puedes solicitar hasta 3 herramientas a la vez.')
+    else:
+        solicitud.append(id)
+        request.session['solicitud'] = solicitud
+        request.session.modified = True
+        messages.success(request, 'Herramienta agregada a la solicitud.')
+
+    return redirect('catalogo')
+
+
+@login_required
+def ver_solicitud(request):
+    ids = request.session.get('solicitud', [])
+    herramientas = Herramienta.objects.filter(pk__in=ids).select_related('categoria').order_by('nombre')
+    return render(request, 'prestamos/solicitud.html', {'herramientas': herramientas, 'ids': ids})
+
+
+@login_required
+@require_POST
+def quitar_solicitud(request, id):
+    solicitud = request.session.get('solicitud', [])
+    if id in solicitud:
+        solicitud.remove(id)
+        request.session['solicitud'] = solicitud
+        request.session.modified = True
+        messages.info(request, 'Herramienta quitada de la solicitud.')
+    return redirect('ver_solicitud')
+
+
+@login_required
+@require_POST
+@transaction.atomic
+def confirmar_solicitud(request):
+    ids = request.session.get('solicitud', [])
+    if not ids:
+        messages.warning(request, 'No hay herramientas en tu solicitud.')
+        return redirect('catalogo')
+
+    herramientas = Herramienta.objects.filter(pk__in=ids)
+    creados = 0
+    for herramienta in herramientas:
+        if not herramienta.disponible or herramienta.estado == 'En reparación':
+            messages.error(request, f'La herramienta {herramienta.nombre} no está disponible.')
+            continue
+
+        Prestamo.objects.create(
+            socio=request.user,
+            herramienta=herramienta,
+            fecha_devolucion_esperada=timezone.localdate() + timedelta(days=7),
+            estado='Pendiente',
+        )
+        herramienta.disponible = False
+        herramienta.save(update_fields=['disponible'])
+        creados += 1
+
+    request.session.pop('solicitud', None)
+    request.session.modified = True
+
+    if creados:
+        messages.success(request, f'Se confirmaron {creados} préstamos correctamente.')
+    else:
+        messages.warning(request, 'No se pudo confirmar ninguna solicitud.')
+
+    return redirect('mis_prestamos')

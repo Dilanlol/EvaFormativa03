@@ -13,4 +13,9 @@ urlpatterns = [
     path('herramientas/<int:pk>/', views.herramienta_detail, name='herramienta_detail'),
     path('herramientas/<int:pk>/editar/', views.herramienta_update, name='herramienta_update'),
     path('herramientas/<int:pk>/eliminar/', views.herramienta_delete, name='herramienta_delete'),
+    path('catalogo/', views.catalogo, name='catalogo'),
+    path('solicitud/agregar/<int:id>/', views.agregar_solicitud, name='agregar_solicitud'),
+    path('solicitud/', views.ver_solicitud, name='ver_solicitud'),
+    path('solicitud/quitar/<int:id>/', views.quitar_solicitud, name='quitar_solicitud'),
+    path('solicitud/confirmar/', views.confirmar_solicitud, name='confirmar_solicitud'),
 ]
